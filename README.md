@@ -137,7 +137,11 @@
  "margin": 100,
  "turn_factor": 0.2
 }
-slider.py
+```
+
+## slider.py
+
+```
 import pygame
 class Slider:
  def __init__(self, x, y, w, min_val, max_val, initial_val, title):
