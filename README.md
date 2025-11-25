@@ -344,6 +344,18 @@ pygame.quit()
 sys.exit()
 ```
 
+### Установка зависимостей
+
+```
+pip install pygame
+```
+
+### Запуск
+
+```
+python main.py
+```
+
 ---
 
 ## Заключение
