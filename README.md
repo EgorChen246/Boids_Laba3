@@ -358,6 +358,126 @@ python main.py
 
 ---
 
+### main.py (с изменениями)
+
+```
+# main.py
+import pygame
+import json
+import sys
+import random
+from boid import Boid
+from slider import Slider
+
+# Загрузка конфигурации
+with open("config.json", "r", encoding="utf-8") as f:
+    config = json.load(f)
+
+pygame.init()
+screen = pygame.display.set_mode((config["window_width"], config["window_height"]))
+pygame.display.set_caption("Лабораторная работа №3 — Бойды | A — добавить, R — очистить")
+clock = pygame.time.Clock()
+font = pygame.font.SysFont("segoeui", 20)
+#font = pygame.font.SysFont("segoeui", 22, bold=True)
+font_small = pygame.font.SysFont("segoeui", 18)
+
+# Создание бойдов
+boids = []
+for _ in range(config["boid_count"]):
+    x = random.randint(100, config["window_width"] - 100)
+    y = random.randint(100, config["window_height"] - 100)
+    boids.append(Boid(x, y, config))
+
+# Слайдеры
+sliders = [
+    Slider(20, 20, 300, 0.0, 3.0, config["separation_weight"], "Separation weight"),
+    Slider(20, 80, 300, 0.0, 3.0, config["alignment_weight"], "Alignment weight"),
+    Slider(20, 140, 300, 0.0, 3.0, config["cohesion_weight"], "Cohesion weight"),
+]
+
+# Основной цикл
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+        # включение/выключение правил клавишами 1,2,3
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_1:
+                config["separation_enabled"] = not config["separation_enabled"]
+            if event.key == pygame.K_2:
+                config["alignment_enabled"] = not config["alignment_enabled"]
+            if event.key == pygame.K_3:
+                config["cohesion_enabled"] = not config["cohesion_enabled"]
+            
+            # добавили новый функционал
+            if event.key == pygame.K_r:  # R — удалить всех
+                boids.clear()
+            if event.key == pygame.K_a:  # A — добавить одного бойда в случайное место
+                if len(boids) < 500:
+                    x = random.randint(100, config["window_width"] - 100)
+                    y = random.randint(100, config["window_height"] - 100)
+                    boids.append(Boid(x, y, config))
+            
+            # добавил придуманную мной функцию
+            if event.key == pygame.K_s:  # S — добавить сразу 10 бойдов
+                for _ in range(10):
+                    if len(boids) < 500:
+                        x = random.randint(100, config["window_width"] - 100)
+                        y = random.randint(100, config["window_height"] - 100)
+                        boids.append(Boid(x, y, config))
+
+        for slider in sliders:
+            slider.handle_event(event)
+
+    # Обновляем веса из слайдеров
+    config["separation_weight"] = sliders[0].get_value()
+    config["alignment_weight"] = sliders[1].get_value()
+    config["cohesion_weight"] = sliders[2].get_value()
+
+    # Обновление бойдов
+    for boid in boids:
+        boid.update(boids)
+
+    screen.fill(config["background_color"])  # Отрисовка
+    
+    for boid in boids:
+        boid.draw(screen)
+
+    # UI
+    for slider in sliders:
+        slider.draw(screen, font)
+
+    # Счётчик бойдов
+    count_text = font.render(f"Бойдов: {len(boids)}", True, (255, 255, 120))
+    screen.blit(count_text, (20, 220))
+
+    # Подсказки
+    hints = [
+        "1 / 2 / 3 — переключить Separation / Alignment / Cohesion",
+        "A — добавить 1 бойда",
+        "S — добавить 10 бойдов",
+        "R — удалить всех",
+        "Мышь — регулировка весов"
+    ]
+
+    y = config["window_height"] - 170
+    
+    for text in hints:
+        surf = font_small.render(text, True, (180, 255, 180))
+        screen.blit(surf, (20, y))
+        y += 26
+
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
+sys.exit()
+```
+
+---
+
 ## Заключение
 
 В ходе выполнения лабораторной работы был успешно реализован классический 
